@@ -105,11 +105,24 @@
   )
 )
 
+(define (get-folder-path)
+    (define user-input(string-trim (read-line)))
+    (let loop()
+        (when (not (directory-exists? user-input))
+            (displayln "The folder path is incorrect\n plesae enter again")
+            (set! user-input(string-trim (read-line)))
+            (loop)
+        )
+    )
+    user-input
+)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;          main           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (displayln "Enter the folder path please")
-(define folder-path (string-trim (read-line)))
+(define folder-path(get-folder-path))
+;(define folder-path (string-trim (read-line)))
 (displayln folder-path)
 ;folder-path את רשימת הקבצים בתיקייה שבנתיב  file-list מכניס למשתנה 
 (define file-list (directory-list folder-path))
