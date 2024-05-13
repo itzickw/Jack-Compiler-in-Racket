@@ -109,7 +109,7 @@
     (define user-input(string-trim (read-line)))
     (let loop()
         (when (not (directory-exists? user-input))
-            (displayln "The folder path is incorrect\n plesae enter again")
+            (displayln "The folder path is incorrect, plesae enter again")
             (set! user-input(string-trim (read-line)))
             (loop)
         )
