@@ -22,7 +22,7 @@
 )
 
 
-;חלוקת השורה למילים והכנסה למערך
+
 (define (handle-line line output-port)
   (define split-line(string-split line " "))
 
@@ -68,7 +68,7 @@
   output-asm-file
 )
 
-;.vm בודק האם הקובץ עם סיומת 
+
 (define (isVm file)
   (define file-name (path->string file))
   (string-suffix? file-name ".vm")
@@ -84,9 +84,9 @@
 )
 
 
-;עובר על הקובץ שורה שורה ומדפיס
+
 (define (read-file file-path)
-  ;הגדרת משתנה שפותח את הקובץ לקריאה
+
   (define input-port (open-input-file file-path))
 
   (let loop ()
@@ -122,15 +122,15 @@
 
 (displayln "Enter the folder path please")
 (define folder-path(get-folder-path))
-;(define folder-path (string-trim (read-line)))
+
 (displayln folder-path)
-;folder-path את רשימת הקבצים בתיקייה שבנתיב  file-list מכניס למשתנה 
+
 (define file-list (directory-list folder-path))
 
 (define folder-name(get-folder-name folder-path))
 (define output-asm-file(open-asm-file folder-name))
 
-;ואם כן שולח לקריאה והצגה vm בודק כל קובץ ברשימה אם הוא קובץ 
+
 (for ([file file-list])
   (when (isVm file) 
 
@@ -139,7 +139,6 @@
       (define file-path (string-append folder-path "\\" (path->string file)))
       (read-file file-path)
       (displayln  "" output-asm-file)
-      (displayln "a")
   )
 
   (when(equal? file (last file-list))
