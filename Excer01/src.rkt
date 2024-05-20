@@ -29,12 +29,12 @@
 
 (define (add)
     (displayln (string-append "\n//add operation") output-asm-file)
-    (displayln "@SP\nA=M\nA=A-1\nD=M\nA=A-1\nM=M+D\nD=A+1\n@SP\nM=D" output-asm-file)
+    (displayln "@SP\nA=M-1\nD=M\nA=A-1\nM=M+D\nD=A+1\n@SP\nM=D" output-asm-file)
 )
 
 (define (sub)
     (displayln (string-append "\n//sub operation") output-asm-file)
-    (displayln "@SP\nA=M\nA=A-1\nD=M\nA=A-1\nM=M-D\nD=A+1\n@SP\nM=D" output-asm-file)
+    (displayln "@SP\nA=M-1\nD=M\nA=A-1\nM=M-D\nD=A+1\n@SP\nM=D" output-asm-file)
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
