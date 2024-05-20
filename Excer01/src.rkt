@@ -6,6 +6,13 @@
 
 #lang racket
 
+; (define (stack-pointer-load)
+;   (displayln "@SP\nA=M\n" output-asm-file)
+; )
+
+(define (pop-to-D)
+  (displayln "@SP\nA=M-1\nD=M" output-asm-file)
+)
 
 (define (handle-line split-line)
     ;(define split-line(string-split line " "))
@@ -19,6 +26,7 @@
     )
     (when (string=? operation "add") (add))
     (when (string=? operation "sub") (sub))
+    (when (string=? operation "eql") (eql))
 )
 
 (define (push-constant num)
@@ -29,12 +37,19 @@
 
 (define (add)
     (displayln (string-append "\n//add operation") output-asm-file)
-    (displayln "@SP\nA=M-1\nD=M\nA=A-1\nM=M+D\nD=A+1\n@SP\nM=D" output-asm-file)
+    (pop-to-D)
+    (displayln "A=A-1\nM=M+D\nD=A+1\n@SP\nM=D" output-asm-file)
 )
 
 (define (sub)
     (displayln (string-append "\n//sub operation") output-asm-file)
-    (displayln "@SP\nA=M-1\nD=M\nA=A-1\nM=M-D\nD=A+1\n@SP\nM=D" output-asm-file)
+    (pop-to-D)
+    (displayln "A=A-1\nM=M-D\n@SP\nM=M-1" output-asm-file)
+)
+
+(define (eql)
+  (pop-to-D)
+  (displayln "A=A-1\nD=M-D\n@")
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -48,8 +63,8 @@
 
 
 (define (open-asm-file name)
-  (define file-name (string-append name ".asm"))
-  (define output-asm-file (open-output-file file-name #:exists 'replace))
+  (define file-path (string-append folder-path "/" (string-append name ".asm")))
+  (define output-asm-file (open-output-file file-path #:exists 'replace))
   output-asm-file
 )
 
