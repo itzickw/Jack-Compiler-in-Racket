@@ -75,29 +75,24 @@
 (define (compare operation)
   (define true-label "")
   (displayln (string-append "\n//" operation " operation") output-asm-file)
+
   (pop-to-D)
   ;equal(x = y), D = x-y
   (displayln "D=M-D" output-asm-file)
   
-
   (when (string=? operation "eq") (set! true-label (jump-if-true "D;JEQ")))
   (when (string=? operation "gt") (set! true-label (jump-if-true "D;JGT")))
   (when (string=? operation "lt") (set! true-label (jump-if-true "D;JLT")))
 
-  ;moving the stack pointer -2
-  (displayln "@SP\nM=M-2" output-asm-file)
-
   ;"0" = false. (for true goto IS_TRUEi)
-  (push-constant "0")
-
+  (displayln "D=0\n@SP\nA=M-1\nA=A-1\nM=D" output-asm-file)
   ;skip on IS_TRUEi block
   (define false-label (jump-if-false "0;JMP"))
-  
   (displayln (string-append "(" true-label ")") output-asm-file)
-
-  (push-constant "-1")
-  
+  (displayln "D=-1\n@SP\nA=M-1\nA=A-1\nM=D" output-asm-file)
   (displayln (string-append "(" false-label ")") output-asm-file)
+
+  (displayln "@SP\nM=M-1" output-asm-file)
 )
 
 (define (push-from-memory base my-index)
