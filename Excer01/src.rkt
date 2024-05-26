@@ -37,24 +37,23 @@
 )
 
 
-(define (read-file file-path)
+(define (read-file file-path file-name)
 
   (define input-port (open-input-file file-path))
 
   (let loop ()
     (let ((line (read-line input-port)))
-        (displayln line)
-        (cond
-            [
+      (cond
+        [
                 (eof-object? line) ; Check for end-of-file
                 (close-input-port input-port)
-            ]
-            [else
+        ]
+        [else
                 (set! line(string-split(string-trim line)))
-                (when (not (empty? line)) (handle-line line output-asm-file))
+                (when (not (empty? line)) (handle-line line output-asm-file file-name))
                 (loop)
-            ]
-        )
+        ]
+      )
     )
   )
 )
@@ -88,7 +87,7 @@
       (define file-name (drop-extension file))
       (displayln (string-append "// " file-name " file") output-asm-file)
       (define file-path (string-append folder-path "\\" (path->string file)))
-      (read-file file-path)
+      (read-file file-path file-name)
       (displayln  "" output-asm-file)
   )
 )

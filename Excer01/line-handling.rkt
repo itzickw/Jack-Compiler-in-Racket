@@ -10,13 +10,13 @@
 ;     ============================== handling funcs ====================================
 
 
-(define (handle-line split-line output-file)
+(define (handle-line split-line output-file file-name)
     (set! output-asm-file output-file)
   
     (define operation (first split-line))
     
-    (when (string=? operation "push")(push-handling split-line))
-    (when (string=? operation "pop")(pop-handling split-line))
+    (when (string=? operation "push") (push-handling split-line file-name))
+    (when (string=? operation "pop")  (pop-handling split-line file-name))
 
     (when (string=? operation "add")(math operation "+"))
     (when (string=? operation "sub")(math operation "-"))
@@ -31,25 +31,35 @@
     (when (string=? operation "lt") (compare operation))
 )
 
-(define (push-handling split-line)
+(define (push-handling split-line file-name)
   (define operation (second split-line))
   (displayln (string-append "\n//push " operation " " (third split-line)) output-asm-file)
 
   (when (string=? operation "constant") (push-constant (third split-line)))
-  (when (string=? operation "local")    (push-from-memory "LCL" (third split-line)))
-  (when (string=? operation "argument") (push-from-memory "ARG" (third split-line)))
-  (when (string=? operation "this")     (push-from-memory "THIS" (third split-line)))
-  (when (string=? operation "that")     (push-from-memory "THAT" (third split-line)))
+  (when (string=? operation "local")    (push-through-pointer "LCL" (third split-line)))
+  (when (string=? operation "argument") (push-through-pointer "ARG" (third split-line)))
+  (when (string=? operation "this")     (push-through-pointer "THIS" (third split-line)))
+  (when (string=? operation "that")     (push-through-pointer "THAT" (third split-line)))
+  (when (string=? operation "temp")     (push-from-memory "5" (third split-line)))
+  (when (string=? operation "pointer")  
+    (if (string=? "0" (third split-line)) (push-from-memory "3" "0")(push-from-memory "4" "0"))
+  )
+  (when (string=? operation "static")    (push-from-static file-name (third split-line)))
 )
 
-(define (pop-handling split-line)
+(define (pop-handling split-line file-name)
   (define operation (second split-line))
   (displayln (string-append "\n//pop " operation " " (third split-line)) output-asm-file)
 
-  (when (string=? operation "local")    (pop-to-memory "LCL" (third split-line)))
-  (when (string=? operation "argument") (pop-to-memory "ARG" (third split-line)))
-  (when (string=? operation "this")     (pop-to-memory "THIS" (third split-line)))
-  (when (string=? operation "that")     (pop-to-memory "THAT" (third split-line)))
+  (when (string=? operation "local")    (pop-through-pointer "LCL" (third split-line)))
+  (when (string=? operation "argument") (pop-through-pointer "ARG" (third split-line)))
+  (when (string=? operation "this")     (pop-through-pointer "THIS" (third split-line)))
+  (when (string=? operation "that")     (pop-through-pointer "THAT" (third split-line)))
+  (when (string=? operation "temp")     (pop-to-memory "5" (third split-line)))
+  (when (string=? operation "pointer") 
+    (if (string=? "0" (third split-line))(pop-to-memory "3" "0")(pop-to-memory "4" "0"))
+  )
+  (when (string=? operation "static")    (pop-to-static file-name (third split-line)))
 )
 
 
@@ -95,15 +105,28 @@
   (displayln "@SP\nM=M-1" output-asm-file)
 )
 
-(define (push-from-memory base my-index)
+(define (push-through-pointer base my-index)
   (displayln (string-append "@" base) output-asm-file)
-  (displayln "D=A" output-asm-file)
+  (displayln "D=M" output-asm-file)
   (displayln (string-append "@" my-index) output-asm-file)
   (displayln "A=D+A\nD=M" output-asm-file)
-  (displayln "@SP\nA=M\nM=D\n@SP\nM=M+1")
+  (displayln "@SP\nA=M\nM=D\n@SP\nM=M+1" output-asm-file)
 )
 
-(define (pop-to-memory base my-index)
+(define (push-from-memory base my-index)
+  (set! my-index(+ (string->number base) (string->number my-index)))
+  (set! my-index (number->string my-index))
+  (displayln (string-append "@"my-index) output-asm-file)
+  (displayln "D=M\n@SP\nA=M\nM=D\n@SP\nM=M+1" output-asm-file)
+)
+
+(define (push-from-static file-name num)
+  (displayln (string-append "@"file-name"."num) output-asm-file)
+  (displayln "D=M" output-asm-file)
+  (displayln "@SP\nA=M\nM=D\n@SP\nM=M+1" output-asm-file)
+)
+
+(define (pop-through-pointer base my-index)
   (displayln "@SP\nA=M-1\nD=M\n@SP\nM=M-1" output-asm-file)
   (displayln (string-append "@" base "\nA=M") output-asm-file)
   
@@ -113,6 +136,19 @@
   (displayln "M=D" output-asm-file)
 )
 
+(define (pop-to-memory base my-index)
+  (set! my-index(+ (string->number base) (string->number my-index)))
+  (set! my-index (number->string my-index))
+  (displayln "@SP\nA=M-1\nD=M\n@SP\nM=M-1" output-asm-file)
+  (displayln (string-append "@"my-index) output-asm-file)
+  (displayln "M=D" output-asm-file)
+)
+
+(define (pop-to-static file-name num)
+  (displayln "@SP\nA=M-1\nD=M\n@SP\nM=M-1" output-asm-file)
+  (displayln (string-append "@"file-name"."num) output-asm-file)
+  (displayln "M=D" output-asm-file)
+)
 
 ;            ============================  auxiliary funcs =========================
 
