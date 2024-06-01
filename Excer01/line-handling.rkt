@@ -36,14 +36,17 @@
   (displayln (string-append "\n//push " operation " " (third split-line)) output-asm-file)
 
   (when (string=? operation "constant") (push-constant (third split-line)))
+  
   (when (string=? operation "local")    (push-through-pointer "LCL" (third split-line)))
   (when (string=? operation "argument") (push-through-pointer "ARG" (third split-line)))
   (when (string=? operation "this")     (push-through-pointer "THIS" (third split-line)))
   (when (string=? operation "that")     (push-through-pointer "THAT" (third split-line)))
+  
   (when (string=? operation "temp")     (push-from-memory "5" (third split-line)))
   (when (string=? operation "pointer")  
     (if (string=? "0" (third split-line)) (push-from-memory "3" "0")(push-from-memory "4" "0"))
   )
+  
   (when (string=? operation "static")    (push-from-static file-name (third split-line)))
 )
 
@@ -55,10 +58,12 @@
   (when (string=? operation "argument") (pop-through-pointer "ARG" (third split-line)))
   (when (string=? operation "this")     (pop-through-pointer "THIS" (third split-line)))
   (when (string=? operation "that")     (pop-through-pointer "THAT" (third split-line)))
+  
   (when (string=? operation "temp")     (pop-to-memory "5" (third split-line)))
   (when (string=? operation "pointer") 
     (if (string=? "0" (third split-line))(pop-to-memory "3" "0")(pop-to-memory "4" "0"))
   )
+
   (when (string=? operation "static")    (pop-to-static file-name (third split-line)))
 )
 
@@ -69,7 +74,7 @@
 (define (math operation operator)
   (displayln (string-append "\n//" operation " operation") output-asm-file)
   (pop-to-D)
-  (displayln (string-append "M=M" operator "D\n@SP\nM=M-1") output-asm-file)
+  (displayln (string-append "M=M"operator"D\n@SP\nM=M-1") output-asm-file)
 )
 
 (define (push-constant num)
