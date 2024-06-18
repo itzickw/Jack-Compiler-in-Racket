@@ -6,6 +6,7 @@
 (define output-asm-file "")
 (define is-false-count 0)
 (define is-true-count 0)
+(define return-count 0)
 
 
 ;     ============================== handling line ====================================
@@ -220,7 +221,8 @@
 
   (when (string=? func-name "Sys.init") (file-initialization))
 
-  (define return-label (create-return-label))
+  (define return-label (string-append "RETURN_"(number->string return-count)))
+  (set! return-count(+ return-count 1))
   
   (push-constant return-label)
   (mem-ptr-push "LCL")
@@ -355,39 +357,6 @@
   (displayln "M=M-1\nA=M\nD=M" output-asm-file)
   (insert-A mem)
   (displayln "M=D" output-asm-file)
-)
-
-(define (create-return-label)
-  (define return-count-file "return-count.txt")
-  (define return-count (read-return-count return-count-file))
-  
-  ; Increment the return count
-  (set! return-count (+ return-count 1))
-  
-  ; Write the updated count back to the file
-  (write-return-count return-count-file return-count)
-  
-  ; Generate and return the new return label
-  (generate-return-label return-count)
-)
-
-(define (read-return-count file)
-  (if (file-exists? file)
-      (let ((input-port (open-input-file file)))
-        (define count (string->number (read-line input-port)))
-        (close-input-port input-port)
-        count)
-      0); Initialize count to 0 if the file doesn't exist
-) 
-
-(define (write-return-count file count)
-  (let ((output-port (open-output-file file #:exists 'replace)))
-    (displayln (number->string count) output-port)
-    (close-output-port output-port))
-)
-
-(define (generate-return-label count)
-  (string-append "RETURN_" (number->string count))
 )
 
 ( define (compersion-result-update result)
