@@ -8,12 +8,6 @@
 
 (require "file-handling.rkt")
 
-(define (get-folder-name folder-path)
-  (define folder-path-parts (string-split folder-path "\\"))
-  (define folder-name (last folder-path-parts))
-  folder-name
-)
-
 (define (is-jack file)
   (define file-name (path->string file))
   (string-suffix? file-name ".jack")
@@ -26,7 +20,6 @@
   (define temp2 (string-join temp1 "."))
   temp2
 )
-
 
 (define (get-folder-path)
     (define user-input(string-trim (read-line)))
@@ -50,8 +43,6 @@
 (define updated-list empty)
 
 (set! updated-list (filter (lambda (file) (is-jack file)) file-list))
-
-(define folder-name(get-folder-name folder-path))
 
 (for ([file updated-list])
   (when (is-jack file) 

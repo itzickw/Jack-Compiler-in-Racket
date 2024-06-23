@@ -3,5 +3,5 @@
 (provide parsing-line-handling)
 
 (define (parsing-line-handling line output-xml-file)
-    (displayln line)
+    (displayln line output-xml-file)
 )
