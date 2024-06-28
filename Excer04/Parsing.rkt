@@ -15,6 +15,10 @@
     (displayln "finished to parsing")
 )
 
+
+;========================================   program structure   ============================
+
+
 (define (class-rule)
     (create-opening-tag "class")
     
@@ -60,8 +64,10 @@
         (create-token)  ; "return type" or "new" (for ctr)
         (create-token)  ; subroutine name
         (create-token)  ; "("
+
         (when (not (nxt-data-is? ")"))
             (parameter-list-role))
+
         (create-token)  ; ")"
 
         (subroutine-body-role)
@@ -72,8 +78,10 @@
 
 (define (parameter-list-role)
     (create-opening-tag "parameterList")
+
         (create-token)  ; type
         (create-token)  ; var name
+
         (let loop ()
             (when (nxt-data-is? ",")
                 (create-token)  ; ","
@@ -82,6 +90,7 @@
                 (loop)
             )
         )
+
     (create-closing-tag "parameterList")
 )
 
@@ -89,11 +98,13 @@
 (define (subroutine-body-role)
     (create-opening-tag "subroutineBody")
         (create-token)  ; "{"
+
         (let loop()
             (when (nxt-data-is? "var")
                 (var-dec-rule)(loop))
         )
 
+        (statements-role)
 
     (create-closing-tag "subroutineBody")
 )
@@ -117,6 +128,125 @@
     (create-closing-tag "varDec")
 
 )
+
+
+;=====================================   statements   ==================================
+
+
+(define (statements-role)
+    (create-opening-tag "statements")
+
+        (let loop()
+            (cond
+                [(nxt-data-is? "let") (let-role) (loop)]
+            )
+        )
+
+    (create-closing-tag "statements")
+)
+
+
+(define (let-role)
+    (create-opening-tag "letStatement")
+
+        (create-token)  ; "let"
+        (create-token)  ; var name
+
+        (when (nxt-data-is? "[")
+
+            (create-token)      ; "["
+            (expression-role)
+            (create-token)      ; "]"
+        )
+
+        (create-token) ; "="
+        (expression-role)
+        (create-token)  ; ";"
+
+    (create-closing-tag "letStatement")
+)
+
+
+(define (expression-role)
+    (create-opening-tag "expression")
+
+        (term-role)
+
+    (create-closing-tag "expression")
+)
+
+
+(define (term-role)
+    (create-opening-tag "term")
+
+        (cond
+            [(nxt-data-is? "(")
+                (create-token)    ; "("
+                (expression-role)
+                (create-token)]   ; ")"
+            
+            [(or(nxt-type-is? "integerConstant")(nxt-type-is? "stringConstant")(nxt-is-keywordConstant?)) 
+                (create-token)] ; number or string or keyword
+            
+            [(or (nxt-data-is? "-") (nxt-data-is? "~"))
+                (create-token)  ; "-" or "~"
+                (term-role)]
+            
+            [(string=? (get-token-data (second-token)) "[")
+                (create-token)  ; var name
+                (create-token)  ; "["
+                (expression-role)
+                (create-token)] ; "]"
+            
+            [(or (is-op? (get-token-data(second-token))) (string=? (get-token-data (second-token)) ";"))
+                (create-token)] ; var name
+
+            [else 
+                (subroutine-call-role)] ; var name
+        )
+
+    (create-closing-tag "term")
+)
+
+
+(define (subroutine-call-role)
+    (create-opening-tag "subroutineCall")
+
+        (create-token)  ; subroutine name
+        (cond
+            [(nxt-data-is? "(")
+                (create-token)  ; "("
+                (expression-list-role)
+                (create-token)] ; ")"
+            [else
+                (create-token)  ; "."
+                (create-token)  ; subroutine
+                (create-token)  ; "("
+                (expression-list-role)
+                (create-token)] ; ")"
+        )
+
+    (create-closing-tag "subroutineCall")
+)
+
+
+(define (expression-list-role)
+    (create-opening-tag "expressionList")
+
+        (when (not (nxt-data-is? ")"))
+            ((expression-role))
+        )
+        (let loop()
+            (when (nxt-data-is? ",")
+                (create-token)  ; ","
+                (expression-role)
+                (loop))
+        )
+
+    (create-closing-tag "expressionList")
+)
+
+
 ;========================================================================================
 
 
@@ -186,12 +316,12 @@
 
 (define (nxt-class-var-dec?)
     (define var-class-list (list "static" "field"))
-    (is-member? (get-token-data (first tokens-list)) var-class-list)
+    (is-member? (get-token-data (nxt-token)) var-class-list)
 )
 
 (define (nxt-subroutine-dec?)
     (define subroutin-list (list "function" "constructor" "method"))
-    (is-member? (get-token-data (first tokens-list)) subroutin-list)
+    (is-member? (get-token-data (nxt-token)) subroutin-list)
 )
 
 (define (is-member? item my-list)
@@ -202,5 +332,32 @@
     flag)
 
 (define (nxt-data-is? data)
-    (string=? (get-token-data (first tokens-list)) data)
+    (string=? (get-token-data (nxt-token)) data)
+)
+
+(define (nxt-type-is?)
+    (define token-type (first (string-split (first tokens-list))))
+    (substring token-type 1 (- (string-length token-type) 1))
+)
+
+
+(define (nxt-is-keywordConstant?)
+    (define keywordConstant-list (list "true" "false" "null" "this"))
+    (is-member? (get-token-data (nxt-token)) keywordConstant-list)
+)
+
+
+(define (is-op? token)
+    (define op-list (list "+" "-" "*" "/" "&" "|" "<" ">" "="))
+    (is-member? (get-token-data token) op-list)
+)
+
+
+(define (nxt-token)
+    (first tokens-list)
+)
+
+
+(define (second-token)
+    (second tokens-list)
 )
