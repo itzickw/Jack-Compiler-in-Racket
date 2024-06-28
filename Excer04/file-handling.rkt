@@ -4,6 +4,8 @@
 (require "Tokenizing.rkt")
 (require "Parsing.rkt")
 
+(define parse-string "")
+
 ;(define active-func tokenizing-line-handling)
 
 (define (file-handling folder-path file-path file-name)
@@ -13,6 +15,7 @@
 
 
 (define (create-tokens-file folder-path input-file-path file-name)
+  (displayln file-name)
   (define output-file-path (string-append folder-path"\\"file-name"T.xml"))
   (define output-Txml-file (open-output-file output-file-path #:exists 'replace))
 
@@ -29,7 +32,9 @@
   (define output-file-path (string-append folder-path"\\"file-name".xml"))
   (define output-xml-file (open-output-file output-file-path #:exists 'replace))
 
-  (read-file input-file-path output-xml-file parsing-line-handling)
+  (read-file input-file-path "" create-parse-string)
+  ;(displayln parse-string)
+  (parsing-line-handling parse-string output-xml-file)
   (close-output-port output-xml-file)
 )
 
@@ -37,7 +42,7 @@
 ;=================================================================================
 
 
-(define (read-file file-path output-xml-file active-func)
+(define (read-file file-path output active-func)
 
   (define input-port (open-input-file file-path))
 
@@ -49,11 +54,15 @@
             (close-input-port input-port)
         ]
         [else
-            (active-func (string-trim line) output-xml-file)
+            (active-func (string-trim line) output)
             ;(displayln "finish to read line")
             (loop)
         ]
       )
     )
   )
+)
+
+(define (create-parse-string line output)
+  (set! parse-string (string-append parse-string "\n" line))
 )
