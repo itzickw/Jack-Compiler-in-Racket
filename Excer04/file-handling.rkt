@@ -31,6 +31,7 @@
 (define (create-parse-file folder-path file-name input-file-path)
   (define output-file-path (string-append folder-path"\\"file-name".xml"))
   (define output-xml-file (open-output-file output-file-path #:exists 'replace))
+  (set! parse-string "")
 
   (read-file input-file-path "" create-parse-string)
   ;(displayln parse-string)
